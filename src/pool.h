@@ -1,12 +1,8 @@
+#ifndef __POOL
+#define __POOL
+
 #include <cstddef>
 #include <atomic>
-#include <assert.h>
-#include <thread>
-#include <stdio.h>
-
-#include <cstdint>
-#include <limits>
-#include <type_traits>
 
 template <size_t VALUE_SIZE, size_t POOL_CAPACITY>
 struct memory_pool
@@ -39,7 +35,7 @@ private:
 
     // A linked list representing a stack.  Each item points to the next by default,
     // except the last one, which points to <end>.  Contains the tag | index combination.
-    alignas(8) std::atomic<uint32_t> next[POOL_CAPACITY];
+    alignas(alignof(uint32_t)) std::atomic<uint32_t> next[POOL_CAPACITY];
 
     // Extracts just the index part from the tagged head.
     static inline uint32_t extract_index(uint64_t source_head)
@@ -100,7 +96,7 @@ void memory_pool<VALUE_SIZE, POOL_CAPACITY>::release(std::byte *at)
     }
 
     ptrdiff_t p = at - values;
-    if (p >= POOL_CAPACITY || (p % VALUE_SIZE != 0U))
+    if (p >= ptrdiff_t(POOL_CAPACITY) || (p % VALUE_SIZE != 0U))
     {
         return;
     }
@@ -122,37 +118,4 @@ void memory_pool<VALUE_SIZE, POOL_CAPACITY>::release(std::byte *at)
     }
 }
 
-int main()
-{
-    while (true)
-    {
-        memory_pool<1, 4> pool;
-
-        auto test1 = [&]() mutable
-        {
-            std::thread::id this_id = std::this_thread::get_id();
-            for (unsigned long long i = 0; i < 500; ++i)
-            {
-                auto p1 = pool.acquire();
-                auto p2 = pool.acquire();
-                auto p3 = pool.acquire();
-
-                assert((p1 != p2) || !p1);
-                assert((p1 != p3) || !p1);
-                assert((p2 != p3) || !p2);
-
-                pool.release(p2);
-                pool.release(p1);
-                pool.release(p3);
-
-                // printf("%u pointers: %p %p %p\n", this_id, p1, p2, p3);
-            }
-        };
-
-        std::jthread t1(test1);
-        std::jthread t2(test1);
-        std::jthread t3(test1);
-    }
-
-    return 0;
-}
+#endif
