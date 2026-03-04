@@ -2,8 +2,8 @@
     "version": 8,
     "configurePresets": [
         {
-            "name": "GCC 15.2.0 aarch64-apple-darwin25",
-            "displayName": "GCC 15.2.0 aarch64-apple-darwin25",
+            "name": "GCC 15.2.0 aarch64-apple-darwin25 DEBUG",
+            "displayName": "GCC 15.2.0 DEBUG",
             "description": "Používají se kompilátory: C = /opt/homebrew/bin/aarch64-apple-darwin25-gcc-15, CXX = /opt/homebrew/bin/aarch64-apple-darwin25-g++-15",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
@@ -11,6 +11,18 @@
                 "CMAKE_C_COMPILER": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15",
                 "CMAKE_CXX_COMPILER": "/opt/homebrew/bin/aarch64-apple-darwin25-g++-15",
                 "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "GCC 15.2.0 aarch64-apple-darwin25 RELEASE",
+            "displayName": "GCC 15.2.0 RELEASE",
+            "description": "Používají se kompilátory: C = /opt/homebrew/bin/aarch64-apple-darwin25-gcc-15, CXX = /opt/homebrew/bin/aarch64-apple-darwin25-g++-15",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/bin/aarch64-apple-darwin25-g++-15",
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ]
