@@ -10,7 +10,7 @@ struct memory_pool
     memory_pool();
 
     /**
-     * Allcates a slot in the memory pool
+     * Allocates a slot in the memory pool
      * @return nullptr when no slots available
      */
     std::byte *acquire();
@@ -23,7 +23,7 @@ struct memory_pool
     void release(std::byte *at);
 
 private:
-    // we need to fit the tag
+    // We need to fit the tag to the head pointer: tag | index.
     static_assert(POOL_CAPACITY < UINT32_MAX);
 
     // Marker for stack end (a non-existing index)
@@ -34,7 +34,8 @@ private:
     std::atomic<uint64_t> head;
 
     // A linked list representing a stack.  Each item points to the next by default,
-    // except the last one, which points to <end>.  Contains the tag | index combination.
+    // except the last one, which points to <end>.  Contains just the index combination, 
+    // tags not needed.
     alignas(alignof(uint32_t)) std::atomic<uint32_t> next[POOL_CAPACITY];
 
     // Extracts just the index part from the tagged head.
@@ -59,7 +60,7 @@ memory_pool<VALUE_SIZE, POOL_CAPACITY>::memory_pool()
     {
         next[i].store(i + 1U, std::memory_order_relaxed);
     }
-    next[POOL_CAPACITY - 1].store(kStackEnd, std::memory_order_relaxed);
+    next[POOL_CAPACITY - 1U].store(kStackEnd, std::memory_order_relaxed);
 
     head.store(0ULL, std::memory_order_release);
 }
@@ -68,7 +69,7 @@ template <size_t VALUE_SIZE, size_t POOL_CAPACITY>
 std::byte *memory_pool<VALUE_SIZE, POOL_CAPACITY>::acquire()
 {
     uint64_t current_head = head.load(std::memory_order_acquire);
-    while (true)
+    for (;;)
     {
         uint32_t index = extract_index(current_head);
         if (index == kStackEnd)
@@ -104,7 +105,7 @@ void memory_pool<VALUE_SIZE, POOL_CAPACITY>::release(std::byte *at)
     size_t index = p / VALUE_SIZE;
 
     uint64_t current_head = head.load(std::memory_order_acquire);
-    while (true)
+    for (;;)
     {
         next[index].store(current_head, std::memory_order_relaxed);
 
