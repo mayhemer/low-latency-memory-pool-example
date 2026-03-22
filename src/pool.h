@@ -10,7 +10,7 @@ struct memory_pool
     memory_pool();
 
     /**
-     * Allcates a slot in the memory pool
+     * Allocates a slot in the memory pool
      * @return nullptr when no slots available
      */
     std::byte *acquire();
@@ -30,11 +30,11 @@ private:
     static inline constexpr uint32_t kStackEnd = UINT32_MAX;
 
     // tag | index packed pointer.  Points at the first item available in the stack-linked-list,
-    // most significant bits hold a monotinically (overlapping) tag to prevent ABA problem.
+    // most significant bits hold a monotonically (overlapping) tag to prevent ABA problem.
     std::atomic<uint64_t> head;
 
     // A linked list representing a stack.  Each item points to the next by default,
-    // except the last one, which points to <end>.  Contains the tag | index combination.
+    // except the last one, which points to <end>.
     alignas(alignof(uint32_t)) std::atomic<uint32_t> next[POOL_CAPACITY];
 
     // Extracts just the index part from the tagged head.
